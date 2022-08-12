@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: lendo
+      POSTGRES_PASSWORD: lendoab
+    volumes:
+      - ./service-application/db_init/01_init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+  rabbitmq:
+    image: rabbitmq:3.9.11-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  bank_partner_api:
+    image: lendoab/interview-service:stable
+    container_name: bank_partner_api
+    ports:
+      - "8000:8000"
+  service-application:
+    build:
+      context: ./service-application
+      dockerfile: Dockerfile
+    image: lendo-application:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        delay: 7s
+    container_name: service-application
+    environment:
+      - RELOAD_DELAY=1.5
+      - RELOAD_CONTAINER=service-application
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - rabbitmq
+  service-job:
+    build:
+      context: ./service-job
+      dockerfile: Dockerfile
+    image: lendo-job:latest
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+        delay: 7s
+    container_name: service-job
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8002:8002"
+    depends_on:
+      - postgres
+      - rabbitmq
+
