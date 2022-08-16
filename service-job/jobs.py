@@ -58,7 +58,6 @@ def application_check_status(message_body):
 
     elif resp_json["status"]:
         print(f"[x] Application {resp_json['status']}")
-        print(type(resp_json))
         print(resp_json)
         service_resp = requests.put(
             url=f"http://service-application:8001/application/{resp_json['application_id']}",
