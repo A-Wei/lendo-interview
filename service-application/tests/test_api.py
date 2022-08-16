@@ -8,7 +8,6 @@ client = TestClient(app)
 
 
 class TestApplicationPostAPI:
-    @pytest.mark.asyncio
     @pytest.mark.usefixtures("db_connection", "mock_settings")
     @mock.patch('src.main.rmq_client')
     def test_create_application_success(self, mocker):
@@ -21,7 +20,6 @@ class TestApplicationPostAPI:
             "application_id": response.json()["application_id"]
         }
 
-    @pytest.mark.asyncio
     @pytest.mark.usefixtures("db_connection", "mock_settings")
     def test_create_application_failed_with_missing_first_name(self):
         post_data = {"last_name": "B"}
@@ -31,7 +29,6 @@ class TestApplicationPostAPI:
         assert response.json()["detail"][0]["loc"] == ["body", "first_name"]
         assert response.json()["detail"][0]["msg"] == "field required"
 
-    @pytest.mark.asyncio
     @pytest.mark.usefixtures("db_connection", "mock_settings")
     def test_create_application_failed_with_missing_last_name(self):
         post_data = {"first_name": "A"}
@@ -43,7 +40,6 @@ class TestApplicationPostAPI:
 
 
 class TestApplicationGetAPI:
-    @pytest.mark.asyncio
     @pytest.mark.usefixtures("db_connection", "mock_settings")
     def test_get_application_by_status(self):
         response = client.get("/applications/completed")
@@ -53,7 +49,6 @@ class TestApplicationGetAPI:
         for row in response.json()["data"]:
             assert row["status"] == "completed"
 
-    @pytest.mark.asyncio
     @pytest.mark.usefixtures("db_connection", "mock_settings")
     def test_get_application_by_id(self):
         response = client.get("/application/66cd16f4-2d68-49ae-a15a-71b9de47ac19")
