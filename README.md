@@ -1,4 +1,4 @@
-# lendo-interview
+# Interview
 
 ## Service Flow Chart
 ![alt text](service-flow.jpeg)
